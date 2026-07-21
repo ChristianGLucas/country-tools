@@ -1,16 +1,18 @@
 name: country-convert-info
 description: Convert an arbitrary-form ISO code to alpha-2, then look up the full country record — proves country-tools nodes compose by field adapter.
-
 nodes:
-  - alias: convert
-    package: christiangeorgelucas/country-tools@0.1.0
-    node: ConvertCode
-  - alias: info
-    package: christiangeorgelucas/country-tools@0.1.0
-    node: GetCountryInfo
-
+    - alias: convert
+      package: christiangeorgelucas/country-tools@0.1.0
+      node: ConvertCode
+      col: 0
+      row: 0
+    - alias: info
+      package: christiangeorgelucas/country-tools@0.1.0
+      node: GetCountryInfo
+      col: 1
+      row: 0
 edges:
-  - from: convert
-    to: info
-    adapter:
-      "alpha2": code
+    - from: convert
+      to: info
+      adapter:
+        alpha2: code
