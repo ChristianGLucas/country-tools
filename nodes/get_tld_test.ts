@@ -28,6 +28,13 @@ describe('GetTLD', () => {
     expect(r.getError()).toBe('TLD_UNASSIGNED');
   });
 
+  it('returns found=false for Saint Martin (French part)', () => {
+    const r = run('MF');
+    expect(r.getFound()).toBe(false);
+    expect(r.getTld()).toBe('');
+    expect(r.getError()).toBe('TLD_UNASSIGNED');
+  });
+
   it('returns found=false for Bonaire, Sint Eustatius and Saba', () => {
     const r = run('BQ');
     expect(r.getFound()).toBe(false);
