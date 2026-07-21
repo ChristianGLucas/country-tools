@@ -57,7 +57,7 @@ nodes:
     - name: GetTLD
       input: CodeInput
       output: TLDOutput
-      description: Look up a country's ccTLD (country-code top-level domain) including the leading dot, e.g. "US" -> ".us", "GB" -> ".uk". found=false for the handful of ISO 3166-1 codes with no delegated ccTLD (e.g. Bouvet Island) or an unknown country code. Sourced from IANA's public root-zone delegation records.
+      description: Look up a country's ccTLD (country-code top-level domain) including the leading dot, e.g. "US" -> ".us", "GB" -> ".uk". found=false for the handful of ISO 3166-1 codes with no delegated ccTLD (e.g. Saint Barthélemy, Western Sahara) or an unknown country code. Sourced from IANA's own per-code root-zone delegation records.
     - name: GetFlagEmoji
       input: CodeInput
       output: FlagEmojiOutput

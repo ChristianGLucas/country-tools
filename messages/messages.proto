@@ -50,7 +50,7 @@ message Country {
   // Empty when the code has no delegated ccTLD (see tld_found).
   string tld = 11;
   // True when a ccTLD is delegated for this country (a few ISO codes, e.g.
-  // Bouvet Island, have none).
+  // Saint Barthélemy, have none).
   bool tld_found = 12;
   // False when the requested code did not resolve to a known ISO 3166-1
   // country; every other field is then a zero value.
@@ -179,8 +179,8 @@ message TLDOutput {
   // Country-code top-level domain including the leading dot, e.g. ".us".
   string tld = 1;
   // False for the handful of ISO 3166-1 codes with no delegated ccTLD
-  // (Bouvet Island, Saint Barthélemy, Saint Martin, Svalbard & Jan Mayen) or
-  // for an unknown country code.
+  // (Bonaire/Sint Eustatius/Saba, Saint Barthélemy, Saint Martin, Western
+  // Sahara, US Minor Outlying Islands) or for an unknown country code.
   bool found = 2;
   string error = 3;
 }

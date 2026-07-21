@@ -141,7 +141,21 @@ export function alpha2FromFlagEmoji(raw: unknown): string | null {
 const TLD_OVERRIDES: Record<string, string> = {
   GB: 'uk', // "GB" is reserved in ISO 3166-1 at the UK's request; .gb was never delegated.
 };
-const TLD_UNASSIGNED = new Set(['BV', 'BL', 'MF', 'SJ']);
+// ISO 3166-1 alpha-2 codes with NO currently-delegated ccTLD, verified
+// directly against each code's own IANA root-zone delegation record
+// (iana.org/domains/root/db/<cc>.html — every entry below explicitly states
+// "This domain is not present in the root zone at this time."):
+//   BQ  Bonaire, Sint Eustatius and Saba
+//   BL  Saint Barthélemy
+//   MF  Saint Martin (French part)
+//   EH  Western Sahara
+//   UM  US Minor Outlying Islands (delegated, then formally revoked in 2007)
+// NOTE: Bouvet Island (BV) and Svalbard & Jan Mayen (SJ) are commonly
+// mis-cited as unassigned (several secondary sources say so) but their IANA
+// delegation records are in fact live (Norid A/S, Norway) — verified
+// directly against iana.org/domains/root/db/bv.html and sj.html, not taken
+// on a secondary source's word. They are intentionally NOT in this set.
+const TLD_UNASSIGNED = new Set(['BQ', 'BL', 'MF', 'EH', 'UM']);
 
 export function tldForAlpha2(alpha2: string): { tld: string; found: boolean } {
   if (TLD_UNASSIGNED.has(alpha2)) return { tld: '', found: false };
