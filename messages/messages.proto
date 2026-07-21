@@ -1,0 +1,224 @@
+// This file defines the data contracts (messages) for your Axiom package.
+// Every node's --input and --output refers to a message defined here.
+//
+// Run `axiom create message <Name>` to scaffold a new message below.
+// Run `axiom generate` to compile these definitions into language bindings in gen/.
+//
+// DOCUMENTATION
+//   Comments written directly above a message or field declaration are extracted
+//   automatically at publish time and shown in the Axiom registry as documentation.
+//   Write your descriptions there — no separate doc files needed.
+//
+//   Leading comment  (no blank line before the declaration) → registry description ✓
+//   Detached comment (blank line before the declaration)    → ignored by registry  ✗
+//
+// This file is yours to edit. Axiom only appends new message blocks — it never
+// overwrites or removes content you have written.
+
+syntax = "proto3";
+
+package christiangeorgelucas.country_tools;
+
+// The canonical country reference record: every fact this package can produce
+// about a single ISO 3166-1 country, in one envelope. `found=false` means the
+// requested code did not resolve to a known country — all other fields are
+// then empty/zero and `error` carries a machine-readable reason.
+message Country {
+  // ISO 3166-1 alpha-2 code, upper-case, e.g. "US".
+  string alpha2 = 1;
+  // ISO 3166-1 alpha-3 code, upper-case, e.g. "USA".
+  string alpha3 = 2;
+  // ISO 3166-1 numeric code, zero-padded to 3 digits, e.g. "840".
+  string numeric = 3;
+  // Common English short name, e.g. "United States of America".
+  string name = 4;
+  // Regional-indicator flag emoji derived purely from alpha2, e.g. "🇺🇸".
+  string flag_emoji = 5;
+  // Capital city, when available from the reference dataset, e.g. "Washington D.C.".
+  string capital = 6;
+  // Two-letter continent code, e.g. "NA".
+  string continent_code = 7;
+  // Full continent name, e.g. "North America".
+  string continent_name = 8;
+  // ISO 4217 currency code(s) the country uses, e.g. ["USD"]. This is the
+  // static ISO mapping, not a locale-aware display name — pair with
+  // christiangeorgelucas/locale-tools' GetCurrencyInfo for that.
+  repeated string currency_codes = 9;
+  // Country calling code(s) without "+", e.g. ["1"].
+  repeated string calling_codes = 10;
+  // Country-code top-level domain including the leading dot, e.g. ".us".
+  // Empty when the code has no delegated ccTLD (see tld_found).
+  string tld = 11;
+  // True when a ccTLD is delegated for this country (a few ISO codes, e.g.
+  // Bouvet Island, have none).
+  bool tld_found = 12;
+  // False when the requested code did not resolve to a known ISO 3166-1
+  // country; every other field is then a zero value.
+  bool found = 13;
+  // Machine-readable error token, empty on success. UNKNOWN_CODE when the
+  // input code does not resolve; INVALID_INPUT when the input is malformed
+  // (empty, too long, non-alphanumeric).
+  string error = 14;
+}
+
+// A single ISO code (alpha-2, alpha-3, or numeric, any form) identifying a
+// country. Used by nodes that need only the identity, not extra options.
+message CodeInput {
+  // ISO 3166-1 code in any form: alpha-2 ("US"), alpha-3 ("USA"), or numeric
+  // ("840"). Case-insensitive. At most 8 characters.
+  string code = 1;
+}
+
+message ConvertCodeInput {
+  // ISO 3166-1 code in any form: alpha-2, alpha-3, or numeric. Case-insensitive.
+  string code = 1;
+}
+
+// All three ISO 3166-1 representations of one country, cross-converted from
+// whichever form was supplied.
+message ConvertCodeOutput {
+  string alpha2 = 1;
+  string alpha3 = 2;
+  string numeric = 3;
+  // False when the input code did not resolve to a known country; all code
+  // fields are then empty.
+  bool valid = 4;
+  // Machine-readable error token, empty on success.
+  string error = 5;
+}
+
+message GetNameInput {
+  // ISO 3166-1 code in any form: alpha-2, alpha-3, or numeric.
+  string code = 1;
+  // BCP-47-ish two-letter language tag understood by the underlying ISO-3166
+  // localization data, e.g. "en", "fr", "de", "ja". Defaults to "en". An
+  // unsupported language falls back to "en" and sets lang_used accordingly.
+  string lang = 2;
+}
+
+message NameResult {
+  // The requested code, normalized to upper-case alpha-2.
+  string alpha2 = 1;
+  // The country's name in the requested (or fallback) language.
+  string name = 2;
+  // The language the name was actually returned in (may differ from the
+  // requested `lang` if it was unsupported and fell back to "en").
+  string lang_used = 3;
+  bool found = 4;
+  string error = 5;
+}
+
+message FindByNameInput {
+  // A country name or partial name to search for, e.g. "United States",
+  // "korea", or a misspelling like "Untied Kingdom" (fuzzy=true tolerates it).
+  string name = 1;
+  // Language to search names in; defaults to "en".
+  string lang = 2;
+  // When true (default), also return close (edit-distance) matches if there
+  // is no exact/substring hit. When false, only exact or substring matches.
+  bool fuzzy = 3;
+  // Maximum number of matches to return, default 5, capped at 50.
+  int32 limit = 4;
+}
+
+message NameMatch {
+  string alpha2 = 1;
+  string alpha3 = 2;
+  string numeric = 3;
+  string name = 4;
+  // Match quality in [0,1]; 1.0 = exact (case-insensitive) name match.
+  double score = 5;
+}
+
+message FindByNameOutput {
+  repeated NameMatch matches = 1;
+}
+
+message ValidateCodeOutput {
+  // True when the input is a syntactically well-formed AND real ISO 3166-1
+  // code in some form.
+  bool valid = 1;
+  // Which form was detected: "alpha2", "alpha3", "numeric", or "unknown".
+  string format_detected = 2;
+  // The normalized alpha-2 form, when valid; empty otherwise.
+  string normalized_alpha2 = 3;
+  // Machine-readable error token, empty when valid.
+  string error = 4;
+}
+
+message ListCountriesInput {
+  // Optional two-letter continent filter, e.g. "EU". Empty returns every
+  // country.
+  string continent_code = 1;
+  // Language for the returned names; defaults to "en".
+  string lang = 2;
+}
+
+message CountrySummary {
+  string alpha2 = 1;
+  string alpha3 = 2;
+  string numeric = 3;
+  string name = 4;
+}
+
+message ListCountriesOutput {
+  repeated CountrySummary countries = 1;
+  int32 count = 2;
+}
+
+message CallingCodeOutput {
+  // Country calling code(s) without "+", e.g. ["1"]. Some countries share a
+  // calling code (e.g. many Caribbean nations share "1") and some have more
+  // than one historically assigned (e.g. Kazakhstan also uses "7").
+  repeated string calling_codes = 1;
+  bool found = 2;
+  string error = 3;
+}
+
+message TLDOutput {
+  // Country-code top-level domain including the leading dot, e.g. ".us".
+  string tld = 1;
+  // False for the handful of ISO 3166-1 codes with no delegated ccTLD
+  // (Bouvet Island, Saint Barthélemy, Saint Martin, Svalbard & Jan Mayen) or
+  // for an unknown country code.
+  bool found = 2;
+  string error = 3;
+}
+
+message FlagEmojiOutput {
+  // The regional-indicator-pair flag emoji, e.g. "🇺🇸". Computed purely from
+  // the alpha-2 code (no dataset lookup) — will render for any syntactically
+  // valid alpha-2 pair even if that code is not an assigned country, unless
+  // `found=false` rejected it first.
+  string emoji = 1;
+  bool found = 2;
+  string error = 3;
+}
+
+message DetectFlagInput {
+  // A single regional-indicator-pair flag emoji, e.g. "🇺🇸".
+  string emoji = 1;
+}
+
+message DetectFlagOutput {
+  string alpha2 = 1;
+  string alpha3 = 2;
+  string name = 3;
+  bool found = 4;
+  string error = 5;
+}
+
+message RegionOutput {
+  string continent_code = 1;
+  string continent_name = 2;
+  bool found = 3;
+  string error = 4;
+}
+
+message CurrencyOutput {
+  // ISO 4217 currency code(s) the country uses, e.g. ["USD"]. Static
+  // reference mapping only, not locale-aware formatting.
+  repeated string currency_codes = 1;
+  bool found = 2;
+  string error = 3;
+}

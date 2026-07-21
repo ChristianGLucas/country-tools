@@ -1,0 +1,80 @@
+name: christiangeorgelucas/country-tools
+version: 0.1.0
+language: typescript
+description: >-
+  Composable Axiom country-reference nodes — ISO 3166-1 code interconversion
+  (alpha-2/alpha-3/numeric), name lookup and fuzzy name search in many
+  languages, code validation, a full country listing, and static reference
+  facts (capital, continent, ISO 4217 currency code(s), calling code(s),
+  ccTLD, flag emoji and its reverse) — wrapping the MIT-licensed
+  i18n-iso-countries and countries-list libraries, plus a small hand-compiled
+  ccTLD table sourced from IANA's public root-zone records. This is the
+  country ENTITY itself: codes and static facts, not locale-aware display
+  formatting (pair with christiangeorgelucas/locale-tools for CLDR
+  formatting, or christiangeorgelucas/phone-tools for phone-number parsing).
+  Every node is stateless, deterministic, and fully offline (all data is
+  bundled); malformed or unrecognized input returns a structured error, never
+  a crash.
+license: MIT
+author: Christian George Lucas
+tags:
+    - country
+    - iso-3166
+    - iso-3166-1
+    - country-code
+    - reference-data
+    - alpha-2
+    - alpha-3
+    - flag-emoji
+    - calling-code
+    - currency-code
+    - tld
+nodes:
+    - name: ConvertCode
+      input: ConvertCodeInput
+      output: ConvertCodeOutput
+      description: Convert an ISO 3166-1 country code between alpha-2, alpha-3, and numeric form — accepts any one of the three and returns all three, e.g. "USA" or "840" or "us" -> { alpha2 "US", alpha3 "USA", numeric "840" }. A well-formed but unassigned code (e.g. "ZZ") returns valid=false with every code field empty, never a guess. Wraps i18n-iso-countries.
+    - name: GetName
+      input: GetNameInput
+      output: NameResult
+      description: Look up a country's name from any ISO 3166-1 code form, in a given language, e.g. "DE" -> "Germany" (lang="en") / "Allemagne" (lang="fr"). lang_used reports "en" when the requested language has no bundled localization and the lookup fell back to English. Wraps i18n-iso-countries' localized name data.
+    - name: FindCountryByName
+      input: FindByNameInput
+      output: FindByNameOutput
+      description: Find countries whose name matches a query string — the inverse of GetName, e.g. "korea" -> South Korea and North Korea (substring match), or "Untied Kingdom" -> United Kingdom (fuzzy=true edit-distance match) when there is no exact/substring hit. Results are ranked by score and capped at `limit` (default 5, max 50). Wraps i18n-iso-countries' localized name data.
+    - name: ValidateCountryCode
+      input: CodeInput
+      output: ValidateCodeOutput
+      description: Validate whether a string is a real ISO 3166-1 country code in ANY form (alpha-2, alpha-3, or numeric) — e.g. "US"/"USA"/"840" -> valid=true; "ZZ" (well-formed but unassigned) or "usaa" (malformed shape) -> valid=false with format_detected reporting which shape was seen. Wraps i18n-iso-countries.
+    - name: ListCountries
+      input: ListCountriesInput
+      output: ListCountriesOutput
+      description: List every ISO 3166-1 country as (alpha-2, alpha-3, numeric, name), optionally filtered to one continent, e.g. continent_code="EU" -> just Europe. Sorted by alpha-2 code for a stable, deterministic order. Wraps i18n-iso-countries and countries-list.
+    - name: GetCallingCode
+      input: CodeInput
+      output: CallingCodeOutput
+      description: Look up a country's calling/dialing code(s) without the "+", e.g. "GB" -> ["44"]. This is the static ISO/ITU reference mapping only, not phone-number parsing or validation — pair with christiangeorgelucas/phone-tools for that. Wraps countries-list.
+    - name: GetTLD
+      input: CodeInput
+      output: TLDOutput
+      description: Look up a country's ccTLD (country-code top-level domain) including the leading dot, e.g. "US" -> ".us", "GB" -> ".uk". found=false for the handful of ISO 3166-1 codes with no delegated ccTLD (e.g. Bouvet Island) or an unknown country code. Sourced from IANA's public root-zone delegation records.
+    - name: GetFlagEmoji
+      input: CodeInput
+      output: FlagEmojiOutput
+      description: Compute a country's flag emoji from its ISO 3166-1 code (any form) — a pure regional-indicator-pair computation, e.g. "JP" -> the Japan flag emoji. No dataset lookup; found=false only when the code is not a real, assigned ISO 3166-1 country.
+    - name: DetectCountryFromFlag
+      input: DetectFlagInput
+      output: DetectFlagOutput
+      description: Detect the country from its flag emoji — the reverse of GetFlagEmoji, e.g. the Japan flag emoji -> "JP" Japan. found=false when the input isn't shaped like exactly one regional-indicator-pair emoji, or when the pair has no assigned ISO 3166-1 country.
+    - name: GetRegion
+      input: CodeInput
+      output: RegionOutput
+      description: Map a country to its continent, e.g. "BR" -> { continent_code "SA", continent_name "South America" }. The underlying permissively-licensed dataset provides continent granularity only (no finer UN region/subregion breakdown). Wraps countries-list.
+    - name: GetCurrency
+      input: CodeInput
+      output: CurrencyOutput
+      description: Look up the ISO 4217 currency code(s) a country uses, e.g. "CH" -> ["CHF"]. This is the static ISO reference mapping only — for locale-aware currency DISPLAY formatting use christiangeorgelucas/locale-tools' GetCurrencyInfo instead. Wraps countries-list.
+    - name: GetCountryInfo
+      input: CodeInput
+      output: Country
+      description: Look up every fact this package knows about one country in a single call — codes, English name, flag emoji, capital, continent, currency code(s), calling code(s), and ccTLD — e.g. "FR" -> the full French record. Convenient when a caller needs several facts at once instead of chaining individual lookups.
