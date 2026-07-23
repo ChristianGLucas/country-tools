@@ -1,6 +1,6 @@
 # christiangeorgelucas/country-tools
 
-Composable [Axiom](https://axiom.co) nodes for the ISO 3166-1 **country entity**
+Composable [Axiom](https://axiomide.com) nodes for the ISO 3166-1 **country entity**
 itself — code interconversion, name lookup, validation, listing, and static
 reference facts. Built for the Axiom marketplace.
 
