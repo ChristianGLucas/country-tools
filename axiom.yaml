@@ -1,5 +1,5 @@
 name: christiangeorgelucas/country-tools
-version: 0.1.0
+version: 0.2.0
 language: typescript
 description: >-
   Composable Axiom country-reference nodes — ISO 3166-1 code interconversion

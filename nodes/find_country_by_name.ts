@@ -2,7 +2,6 @@ import { FindByNameInput, FindByNameOutput, NameMatch } from '../gen/messages_pb
 import { AxiomContext } from '../gen/axiomContext';
 import { ensureLocale, isoCountries, levenshtein } from './lib';
 
-const MAX_QUERY_LEN = 128;
 const DEFAULT_LIMIT = 5;
 const MAX_LIMIT = 50;
 
@@ -13,15 +12,15 @@ const MAX_LIMIT = 50;
  * (fuzzy=true, edit-distance match) when there is no exact/substring hit.
  * Matches are ranked by score (1.0 = exact case-insensitive match, down to
  * an edit-distance-derived score for fuzzy hits) and capped at `limit`
- * (default 5, max 50). An empty or oversized query returns no matches.
- * Wraps i18n-iso-countries' localized name data.
+ * (default 5, max 50). An empty query returns no matches. Wraps
+ * i18n-iso-countries' localized name data.
  */
 export function findCountryByName(ax: AxiomContext, input: FindByNameInput): FindByNameOutput {
   const out = new FindByNameOutput();
   const rawQuery = input.getName();
   if (typeof rawQuery !== 'string') return out;
   const query = rawQuery.trim();
-  if (!query || query.length > MAX_QUERY_LEN) return out;
+  if (!query) return out;
 
   const lang = ensureLocale(input.getLang());
   const limitField = input.getLimit();
